@@ -10,7 +10,7 @@ function RPCClient(edgeRpc, id) {
 
     this.edgeRpc = edgeRpc;
     this.id = id;
-    this.rpcId = id.replace(/:/g, '');
+    this.rpcId = id;
     this.is_open = () => edgeRpc.is_open();
     this.routes = {};
 

@@ -49,7 +49,7 @@ EdgeRpcClient.prototype._getQueue = async function() {
 
         let buff = new Buffer(item.value, 'base64');
         let route = item['object-id'] + '/' + item['object-instance-id'] + '/' + item['resource-id'];
-        let deviceId = item['device-id'].split(/(\d\d)/).filter(f=>!!f).join(':');
+        let deviceId = item['device-id'];
 
         if (item.method === 1) {
             this.emit('resource-updated', deviceId, route, buff);
