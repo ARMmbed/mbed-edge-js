@@ -1,0 +1,25 @@
+{
+  "name": "mbed-cloud-edge-js",
+  "version": "1.0.0",
+  "description": "Library to deal with mbed Cloud Edge",
+  "main": "edge-lib.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/janjongboom/mbed-cloud-edge-js.git"
+  },
+  "keywords": [
+    "mbed"
+  ],
+  "author": "Jan Jongboom <janjongboom@gmail.com>",
+  "license": "SEE LICENSE IN LICENSE",
+  "bugs": {
+    "url": "https://github.com/janjongboom/mbed-cloud-edge-js/issues"
+  },
+  "homepage": "https://github.com/janjongboom/mbed-cloud-edge-js#readme",
+  "dependencies": {
+    "es6-promisify": "^5.0.0"
+  }
+}
