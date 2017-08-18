@@ -162,6 +162,9 @@ RPCClient.prototype.register = async function() {
     });
 
     this.is_registered = true;
+
+    // FIXME: should return the real endpoint... this is a workaround
+    return this.rpcId;
 };
 
 RPCClient.prototype.unregister = async function() {
