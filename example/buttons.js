@@ -19,7 +19,7 @@ const Edge = require('../');
             process.exit(1);
         })
 
-        edge = new Edge('192.168.23.150', 9100, 'example-buttons');
+        edge = new Edge('localhost', 9100, 'example-buttons');
         await edge.init();
 
         console.log('Connected to mbed Cloud Edge');
