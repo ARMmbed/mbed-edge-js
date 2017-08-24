@@ -200,7 +200,7 @@ MbedDevice.prototype.register = async function(lwm2m, supportsUpdate) {
         // set resource model
         this.$setResources(lwm2m);
 
-        console.log(CON_PR, ID_PR, 'Registering with model', lwm2m, 'supporting update', supportsUpdate);
+        // console.log(CON_PR, ID_PR, 'Registering with model', lwm2m, 'supporting update', supportsUpdate);
 
         // then start an RPC channel
         let rpc = this.rpcClient = new RPCClient(this.edgeRpc, this.id);
@@ -211,7 +211,6 @@ MbedDevice.prototype.register = async function(lwm2m, supportsUpdate) {
         this.edgeRpc.on('resource-updated', (deviceId, route, newValue) => {
             if (deviceId !== this.id) return;
 
-            console.log('resource updated', route, newValue);
             this.emit('put', '/' + route, newValue);
         });
 
@@ -263,7 +262,7 @@ MbedDevice.prototype.register = async function(lwm2m, supportsUpdate) {
             return rpc['createResource' + type](path, l.value, opr, l.observable);
         });
 
-        console.log(CON_PR, ID_PR, 'Setting resources');
+        // console.log(CON_PR, ID_PR, 'Setting resources');
         await Promise.all(actions);
         if (supportsUpdate) {
             await this.registerUpdateResources();

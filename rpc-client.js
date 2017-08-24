@@ -95,7 +95,6 @@ RPCClient.prototype.createResourceFloat = function(route, value, opr, observable
 RPCClient.prototype.createFunction = function(route, callback) {
     if (!this.is_open()) return Promise.reject('RPC Channel is closed');
     if (!/^(\d)+\/\d\/(\d+)$/.test(route)) return Promise.reject('route should be of format "3200/0/5501"');
-    if (typeof callback !== 'function') return Promise.reject('callback is required');
 
     this.routes[route] = {
         type: 'function',
@@ -110,7 +109,9 @@ RPCClient.prototype.createFunction = function(route, callback) {
         if (deviceId !== this.id) return;
         if (route !== r_route) return;
 
-        callback(buff);
+        if (callback) {
+            callback(buff);
+        }
     };
 
     this.edgeRpc.on('resource-executed', onExecuted);

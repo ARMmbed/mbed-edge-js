@@ -1,7 +1,7 @@
 {
   "name": "mbed-cloud-edge-js",
   "private": true,
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Library to deal with mbed Cloud Edge",
   "main": "edge-lib.js",
   "scripts": {
@@ -21,6 +21,7 @@
   },
   "homepage": "https://github.com/janjongboom/mbed-cloud-edge-js#readme",
   "dependencies": {
-    "es6-promisify": "^5.0.0"
+    "es6-promisify": "^5.0.0",
+    "request": "^2.81.0"
   }
 }
