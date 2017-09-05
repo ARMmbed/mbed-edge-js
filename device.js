@@ -36,6 +36,18 @@ function MbedDevice(id, clientType, edgeRpc) {
     this.ID_PR = '[' + this.id + ']';
 
     this.$setResources([]); // resources are set in register() call
+
+    var onUpdated = (deviceId, path, newValue) => {
+        path = '/' + path;
+
+        if (deviceId !== this.id) return;
+
+        if (this.resources[path]) {
+            this.resources[path].value = newValue;
+        }
+    };
+
+    edgeRpc.on('resource-updated', onUpdated);
 }
 
 MbedDevice.prototype = Object.create(EventEmitter.prototype);

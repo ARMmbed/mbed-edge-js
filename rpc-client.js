@@ -76,6 +76,19 @@ RPCClient.prototype._createResource = function(type, route, value, opr, observab
         }
     };
 
+    var onUpdated = (deviceId, r_route, newValue) => {
+        if (deviceId !== this.id) return;
+        if (route !== r_route) return;
+
+        o.value = newValue;
+    };
+
+    this.edgeRpc.on('resource-updated', onUpdated);
+
+    this._onTerminateQueue.push(() => {
+        this.edgeRpc.removeListener('resource-updated', onUpdated);
+    })
+
     // actual adding happens in register call
     return Promise.resolve(o);
 };
@@ -118,7 +131,7 @@ RPCClient.prototype.createFunction = function(route, callback) {
 
     this._onTerminateQueue.push(() => {
         this.edgeRpc.removeListener('resource-executed', onExecuted);
-    })
+    });
 
     // actual adding happens in register call
     return Promise.resolve();
@@ -147,7 +160,7 @@ RPCClient.prototype._getObjectModel = function() {
             'item-id': resId,
             'operations': this.routes[route].opr,
             'type': this.routes[route].type === 'function' ? 'opaque' : this.routes[route].type,
-            'value': (this.routes[route].value || '').toString()
+            'value': new Buffer((this.routes[route].value || '').toString(), 'utf-8').toString('base64')
         });
     }
 

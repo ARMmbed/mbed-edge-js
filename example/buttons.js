@@ -17,7 +17,7 @@ const Edge = require('../');
                 await edge.deinit();
             } catch (ex) {}
             process.exit(1);
-        })
+        });
 
         edge = new Edge('localhost', 9100, 'example-buttons');
         await edge.init();
@@ -78,12 +78,12 @@ const Edge = require('../');
 
             if (key === '1') {
                 let r1 = device1.resources['/3321/0/5501'];
-                await r1.setValue(r1.value + 1);
+                await r1.setValue(Number(r1.value) + 1);
                 console.log('Set value for device1 to', r1.value);
             }
             else if (key === '2') {
                 let r2 = device2.resources['/4001/0/5901'];
-                await r2.setValue(r2.value + 1);
+                await r2.setValue(Number(r2.value) + 1);
                 console.log('Set value for device2 to', r2.value);
             }
             else {
