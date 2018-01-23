@@ -1,7 +1,7 @@
 {
   "name": "mbed-cloud-edge-js",
   "private": true,
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Library to deal with mbed Cloud Edge",
   "main": "edge-lib.js",
   "scripts": {
