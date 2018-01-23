@@ -10,6 +10,10 @@ const FSTRM_CONTROL_STOP = 0x03;
 const FSTRM_CONTROL_READY = 0x04;
 const FSTRM_CONTROL_FINISH = 0x05;
 
+function wait(ms) {
+    return new Promise((res, rej) => setTimeout(res, ms));
+}
+
 function EdgeRpcClient(host, port, name) {
     EventEmitter.call(this);
 
@@ -189,8 +193,26 @@ EdgeRpcClient.prototype.sendJsonRpc = async function(method, params) {
     });
 }
 
-EdgeRpcClient.prototype.init = async function() {
-    let client = this.client = new net.Socket();
+EdgeRpcClient.prototype.init = async function(tryIx) {
+    tryIx = tryIx || 0;
+
+    try {
+        console.log(CON_PR, 'Connecting to mbed Cloud Edge on ' + this.host + ':' + this.port, `(try: ${++tryIx})`);
+        this.client = await this.connect();
+    }
+    catch (ex) {
+        if (ex.code !== 'ECONNREFUSED') {
+            console.log(CON_PR, 'Failed to connect to mbed Cloud Edge, but not ECONNREFUSED...', ex);
+        }
+
+        // try again in a second
+        await wait(1000);
+        return this.init(tryIx);
+    }
+
+    console.log(CON_PR, 'Connected to mbed Cloud Edge');
+
+    let client = this.client;
 
     client.on('data', this._onData.bind(this));
 
@@ -205,13 +227,8 @@ EdgeRpcClient.prototype.init = async function() {
 
         // does close() fire when calling destroy() ?
         // should re-connect here
+        this.init(0);
     });
-
-    console.log(CON_PR, 'Connecting to mbed Cloud Edge on ' + this.host + ':' + this.port);
-
-    await promisify(client.connect.bind(client))(this.port, this.host);
-
-    console.log(CON_PR, 'Connected to mbed Cloud Edge');
 
     // now we need to send that we're gonna be ready...
     let readyCmd = new Buffer(4);
@@ -242,6 +259,22 @@ EdgeRpcClient.prototype.init = async function() {
     this._is_open = true;
 
     // console.log(CON_PR, 'Protocol translator registered');
+};
+
+EdgeRpcClient.prototype.connect = function() {
+    return new Promise((resolve, reject) => {
+        let client = new net.Socket();
+
+        client.once('connect', () => {
+            resolve(client);
+        });
+
+        client.once('error', (err) => {
+            reject(err);
+        });
+
+        client.connect(this.port, this.host);
+    });
 };
 
 EdgeRpcClient.prototype.deinit = async function() {
