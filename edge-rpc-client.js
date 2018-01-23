@@ -251,7 +251,7 @@ EdgeRpcClient.prototype.deinit = async function() {
     stopCmd.writeUInt32BE(FSTRM_CONTROL_STOP, 0);
     let stopRes = await this.sendControlCommand(stopCmd, true);
 
-    if (stopRes.readUInt32BE(0) === 1) {
+    if (stopRes.readUInt32BE(0) === FSTRM_CONTROL_FINISH) {
         console.log(CON_PR, 'Stopped successfully');
         this.client && this.client.destroy();
         this.client = null;
