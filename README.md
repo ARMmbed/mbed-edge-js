@@ -1,11 +1,11 @@
-# mbed Cloud Edge JS
+# Mbed Cloud Edge JS
 
-node.js protocol translator library to manage devices through mbed Cloud Edge.
+node.js protocol translator library to manage devices through Mbed Cloud Edge.
 
 Example usage:
 
 * [Example application](example/buttons.js)
-* [mbed Cloud Bluetooth Devicelink](https://github.com/ARMmbed/cloud-bluetooth-devicelink/tree/mbed-client-service).
+* [Mbed Cloud Bluetooth Devicelink](https://github.com/ARMmbed/cloud-bluetooth-devicelink/tree/mbed-client-service).
 * [LoRa bridge](https://github.com/ARMmbed/connector-loriot/tree/architectify).
 
 ## How to run the example application
@@ -18,10 +18,10 @@ Example usage:
     $ npm install
     ```
 
-1. Start mbed Cloud Edge on port 9100 via:
+1. Start Mbed Cloud Edge on port 9100 via:
 
     ```
-    $ build/mcc-linux-x86/existing/bin/gw-server 9100 9101
+    $ build/mcc-linux-x86/existing/bin/edge-core -p 9100
     ```
 
 1. Run the example application:

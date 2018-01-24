@@ -1,5 +1,5 @@
 /**
- * This example shows how you can use mbed Cloud Edge to create multiple devices, set resources, and subscribe to resource updates
+ * This example shows how you can use Mbed Cloud Edge to create multiple devices, set resources, and subscribe to resource updates
  */
 
 const Edge = require('../');
@@ -22,7 +22,7 @@ const Edge = require('../');
         edge = new Edge('localhost', 9100, 'example-buttons');
         await edge.init();
 
-        console.log('Connected to mbed Cloud Edge');
+        console.log('Connected to Mbed Cloud Edge');
 
         // create two new devices
         let device1 = await edge.createCloudDevice('device1', 'clicky');

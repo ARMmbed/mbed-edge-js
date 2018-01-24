@@ -197,12 +197,12 @@ EdgeRpcClient.prototype.init = async function(tryIx) {
     tryIx = tryIx || 0;
 
     try {
-        console.log(CON_PR, 'Connecting to mbed Cloud Edge on ' + this.host + ':' + this.port, `(try: ${++tryIx})`);
+        console.log(CON_PR, 'Connecting to Mbed Cloud Edge on ' + this.host + ':' + this.port, `(try: ${++tryIx})`);
         this.client = await this.connect();
     }
     catch (ex) {
         if (ex.code !== 'ECONNREFUSED') {
-            console.log(CON_PR, 'Failed to connect to mbed Cloud Edge, but not ECONNREFUSED...', ex);
+            console.log(CON_PR, 'Failed to connect to Mbed Cloud Edge, but not ECONNREFUSED...', ex);
         }
 
         // try again in a second
@@ -210,7 +210,7 @@ EdgeRpcClient.prototype.init = async function(tryIx) {
         return this.init(tryIx);
     }
 
-    console.log(CON_PR, 'Connected to mbed Cloud Edge');
+    console.log(CON_PR, 'Connected to Mbed Cloud Edge');
 
     let client = this.client;
 
@@ -258,7 +258,7 @@ EdgeRpcClient.prototype.init = async function(tryIx) {
 
     this._is_open = true;
 
-    // console.log(CON_PR, 'Protocol translator registered');
+    console.log(CON_PR, 'Mbed Cloud Edge initialized');
 };
 
 EdgeRpcClient.prototype.connect = function() {

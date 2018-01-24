@@ -2,7 +2,7 @@ const promisify = require('es6-promisify');
 const EventEmitter = require('events');
 
 /**
- * RPCClient for mbed Cloud Edge
+ * RPCClient for Mbed Cloud Edge
  * @param {*} edgeRpc Instance of edge-rpc-client
  */
 function RPCClient(edgeRpc, id) {
@@ -141,7 +141,7 @@ RPCClient.prototype._getObjectModel = function() {
     let objs = [];
 
     for (let route of Object.keys(this.routes)) {
-        // mbed Cloud Edge only supports numbers...
+        // Mbed Cloud Edge only supports numbers...
         let [objId, objInstId, resId] = route.split('/').map(Number);
 
         let obj = objs.find(o => o['object-id'] === objId);

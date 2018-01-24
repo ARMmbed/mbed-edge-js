@@ -27,7 +27,7 @@ RemoteClientService.prototype.listDevices = async function() {
 };
 
 /**
- * Get all devices that are cached in the bridge and are registered with mbed Cloud
+ * Get all devices that are cached in the bridge and are registered with Mbed Cloud
  */
 RemoteClientService.prototype.getAllRegisteredDevices = function() {
     return this.devices.filter(d => d.getRegistrationStatus());
