@@ -24,8 +24,8 @@ const EdgeRpc = require('./edge-rpc-client');
 
 const CON_PR = '\x1b[34m[ClientService]\x1b[0m';
 
-function RemoteClientService(host, port, name) {
-    this.edgeRpc = new EdgeRpc(host, port, name);
+function RemoteClientService(socketPath, name) {
+    this.edgeRpc = new EdgeRpc(socketPath, name);
 
     this.devices = [];
 }
