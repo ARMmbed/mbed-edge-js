@@ -1,8 +1,30 @@
+/*
+ * ----------------------------------------------------------------------------
+ * Copyright 2018 ARM Ltd.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * ----------------------------------------------------------------------------
+ */
+
 const EventEmitter = require('events');
 const url = require('url');
 const RPCClient = require('./rpc-client');
 const manifestParser = require('./manifest-parser');
 const fs = require('fs');
+const fp = require('ieee-float');
+const i64 = require('node-int64');
 
 const CON_PR = '\x1b[34m[ClientService]\x1b[0m';
 
@@ -43,12 +65,28 @@ function MbedDevice(id, clientType, edgeRpc) {
         if (deviceId !== this.id) return;
 
         if (this.resources[path]) {
-            this.resources[path].value = newValue;
+            if (this.resources[path].rpcType === 'Int') {
+                let value = new i64(newValue) + 0;
+
+                this.resources[path].value = value;
+            }
+            else if (this.resources[path].rpcType === 'Float') {
+                let value = fp.readDoubleBE(newValue);
+
+                this.resources[path].value = value;
+            }
+            else {
+                this.resources[path].value = newValue.toString('utf-8');
+            }
+
+            this.emit('put', path, this.resources[path].value);
         }
     };
 
     edgeRpc.on('resource-updated', onUpdated);
 }
+
+ [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x61]
 
 MbedDevice.prototype = Object.create(EventEmitter.prototype);
 
@@ -204,7 +242,7 @@ MbedDevice.prototype.setFotaComplete = async function () {
 
 MbedDevice.prototype.register = async function(lwm2m, supportsUpdate) {
 
-    let ssh, rpc;
+    let rpc;
 
     const ID_PR = this.ID_PR;
 
@@ -219,12 +257,6 @@ MbedDevice.prototype.register = async function(lwm2m, supportsUpdate) {
         await rpc.open();
 
         console.log(CON_PR, ID_PR, 'Opened RPC Channel');
-
-        this.edgeRpc.on('resource-updated', (deviceId, route, newValue) => {
-            if (deviceId !== this.id) return;
-
-            this.emit('put', '/' + route, newValue);
-        });
 
         this.edgeRpc.on('resource-executed', (deviceId, route, data) => {
             if (deviceId !== this.id) return;
@@ -297,16 +329,8 @@ MbedDevice.prototype.register = async function(lwm2m, supportsUpdate) {
             rpc.terminate();
             console.log(CON_PR, ID_PR, 'Terminated');
         }
-        if (ssh) {
-            try {
-                ssh.close();
-                console.log(CON_PR, ID_PR, 'SSH Client closed');
-            }
-            catch(ex) {}
-        }
 
         delete this.rpcClient;
-        delete this.sshClient;
 
         throw 'Registration failed ' + ex;
     }
