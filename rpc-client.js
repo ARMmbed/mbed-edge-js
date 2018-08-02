@@ -1,8 +1,30 @@
+/*
+ * ----------------------------------------------------------------------------
+ * Copyright 2018 ARM Ltd.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * ----------------------------------------------------------------------------
+ */
+
 const promisify = require('es6-promisify');
 const EventEmitter = require('events');
+const fp = require('ieee-float');
+const i64 = require('node-int64');
 
 /**
- * RPCClient for Mbed Cloud Edge
+ * RPCClient for Mbed Edge
  * @param {*} edgeRpc Instance of edge-rpc-client
  */
 function RPCClient(edgeRpc, id) {
@@ -30,7 +52,7 @@ RPCClient.prototype.open = function() {
 };
 
 RPCClient.prototype._setValue = function(route, newValue) {
-    if (route.indexOf('/') === 0) route = route.substr(1); // should be fixed higher up but f&@ it
+    if (route.indexOf('/') === 0) route = route.substr(1); // should be fixed higher up
 
     if (!this.is_open) return Promise.reject('RPC Channel is closed');
     if (!this.routes[route]) return Promise.reject(`Unknown route '${route}'`);
@@ -41,7 +63,7 @@ RPCClient.prototype._setValue = function(route, newValue) {
     r.value = newValue;
 
     return this.edgeRpc.sendJsonRpc('write', {
-        'device-id': this.rpcId,
+        'deviceId': this.rpcId,
         'objects': this._getObjectModel()
     });
 };
@@ -80,7 +102,19 @@ RPCClient.prototype._createResource = function(type, route, value, opr, observab
         if (deviceId !== this.id) return;
         if (route !== r_route) return;
 
-        o.value = newValue;
+        if (type === 'int') {
+            let value = new i64(newValue) + 0;
+
+            o.value = value;
+        }
+        else if (type === 'float') {
+            let value = fp.readDoubleBE(newValue);
+
+            o.value = value;
+        }
+        else {
+            o.value = newValue.toString('utf-8');
+        }
     };
 
     this.edgeRpc.on('resource-updated', onUpdated);
@@ -141,26 +175,59 @@ RPCClient.prototype._getObjectModel = function() {
     let objs = [];
 
     for (let route of Object.keys(this.routes)) {
-        // Mbed Cloud Edge only supports numbers...
+        // Mbed Edge only supports numbers...
         let [objId, objInstId, resId] = route.split('/').map(Number);
 
-        let obj = objs.find(o => o['object-id'] === objId);
+        let obj = objs.find(o => o['objectId'] === objId);
         if (!obj) {
-            obj = { 'object-id': objId, 'object-instances': [] };
+            obj = { 'objectId': objId, 'objectInstances': [] };
             objs.push(obj);
         }
 
-        let objInst = obj['object-instances'].find(o => o['object-instance-id'] === objInstId);
+        let objInst = obj['objectInstances'].find(o => o['objectInstanceId'] === objInstId);
         if (!objInst) {
-            objInst = { 'object-instance-id': objInstId, 'resources': [] };
-            obj['object-instances'].push(objInst);
+            objInst = { 'objectInstanceId': objInstId, 'resources': [] };
+            obj['objectInstances'].push(objInst);
+        }
+
+        let valueBuffer;
+
+        let r = this.routes[route];
+
+        switch (r.type) {
+            case 'string':
+                valueBuffer = new Buffer((r.value || '').toString(), 'utf-8');
+                break;
+
+            case 'float':
+                if (typeof r.value !== 'number') r.value = Number(r.value);
+
+                valueBuffer = Buffer.alloc(4);
+                valueBuffer.writeFloatBE(r.value);
+                break;
+
+            case 'int':
+                if (typeof r.value !== 'number') r.value = Number(r.value);
+
+                valueBuffer = Buffer.alloc(4);
+                valueBuffer.writeInt32BE(r.value);
+                break;
+
+            case 'function':
+                valueBuffer = new Buffer('', 'utf-8');
+                break;
+
+            default:
+                console.warn('Undefined type for route', route, r.type);
+                valueBuffer = new Buffer('', 'utf-8');
+                break;
         }
 
         objInst.resources.push({
-            'item-id': resId,
+            'resourceId': resId,
             'operations': this.routes[route].opr,
             'type': this.routes[route].type === 'function' ? 'opaque' : this.routes[route].type,
-            'value': new Buffer((this.routes[route].value || '').toString(), 'utf-8').toString('base64')
+            'value': valueBuffer.toString('base64')
         });
     }
 
@@ -168,10 +235,8 @@ RPCClient.prototype._getObjectModel = function() {
 }
 
 RPCClient.prototype.register = async function() {
-    await this.edgeRpc.sendJsonRpc('device_register', {
-        'lifetime': 86400,
-        'queuemode': 'Q',
-        'device-id': this.rpcId,
+    let registrationResponse = await this.edgeRpc.sendJsonRpc('device_register', {
+        'deviceId': this.rpcId,
         'objects': this._getObjectModel()
     });
 
@@ -182,8 +247,10 @@ RPCClient.prototype.register = async function() {
 };
 
 RPCClient.prototype.unregister = async function() {
+    if (!this.is_registered) return true;
+
     await this.edgeRpc.sendJsonRpc('device_unregister', {
-        'device-id': this.rpcId,
+        'deviceId': this.rpcId,
     });
 
     this.is_registered = false;

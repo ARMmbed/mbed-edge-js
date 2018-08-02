@@ -19,20 +19,20 @@ const Edge = require('../');
             process.exit(1);
         });
 
-        edge = new Edge('localhost', 9100, 'example-buttons');
+        edge = new Edge('/tmp/edge.sock', 'example-buttons');
         await edge.init();
 
         console.log('Connected to Mbed Cloud Edge');
 
         // create two new devices
-        let device1 = await edge.createCloudDevice('device1', 'clicky');
-        let device2 = await edge.createCloudDevice('device2', 'clicky');
+        let device1 = await edge.createCloudDevice('button-device1', 'clicky');
+        let device2 = await edge.createCloudDevice('button-device2', 'clicky');
 
         console.log('Created devices');
 
         // devices can emit put/post/fota events
         device1.on('put', (route, newValue) => {
-            console.log('device1 PUT came in', route, newValue.toString('utf-8'));
+            console.log('device1 PUT came in', route, newValue);
         });
 
         device2.on('post', (route, newValue) => {
@@ -57,7 +57,7 @@ const Edge = require('../');
             {
                 path: '/4001/0/5902',
                 operation: ['POST']
-            }
+            },
         ], false /* supports update */);
 
         console.log('Devices registered');
