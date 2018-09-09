@@ -29,10 +29,10 @@ function wait(ms) {
     return new Promise((res, rej) => setTimeout(res, ms));
 }
 
-function EdgeRpcClient(socketPath, name) {
+function EdgeRpcClient(url, name) {
     EventEmitter.call(this);
 
-    this.socketPath = socketPath;
+    this.url = url;
     this.apiPath = '/1/pt';
     this.name = name;
 
@@ -86,9 +86,7 @@ EdgeRpcClient.prototype.init = async function(tryIx) {
     tryIx = tryIx || 0;
 
     try {
-        let url = util.format('ws+unix://%s:%s',
-                              this.socketPath,
-                              this.apiPath);
+        let url = this.url + this.apiPath;
         console.log(CON_PR, 'Connecting to Mbed Edge on ' + url, `(try: ${++tryIx})`);
         await this.connect();
     }
@@ -117,9 +115,7 @@ EdgeRpcClient.prototype.init = async function(tryIx) {
 
 EdgeRpcClient.prototype.connect = function() {
     return new Promise((resolve, reject) => {
-        let url = util.format('ws+unix://%s:%s',
-                              this.socketPath,
-                              this.apiPath);
+        let url = this.url + this.apiPath;
         this.client.connect(url, (err, reply) => {
             if (err) return reject(err);
 
