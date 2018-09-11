@@ -19,7 +19,7 @@ const Edge = require('../');
             process.exit(1);
         });
 
-        edge = new Edge('ws+unix:///tmp/edge.sock', 'example-buttons');     // <-- when running Edge on the same machine
+        edge = new Edge('ws+unix:///tmp/edge.sock:', 'example-buttons');     // <-- when running Edge on the same machine
         // edge = new Edge('ws://192.168.122.132:22223', 'example-buttons');    // <-- when running Edge in a VM, see README.md
         await edge.init();
 
