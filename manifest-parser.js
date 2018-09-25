@@ -69,7 +69,12 @@ let parseAndVerifyManifest = async function (vendorId, deviceClassId, certificat
         promisify(fs.rename.bind(fs))(certFile, Path.join(tmpFolder, fingerprint));
 
         // now we can verify the manifest
-        let verify = await exec(`manifest-tool verify -i "${maniFile}" -V ${vendorId} -C ${deviceClassId} -c ${tmpFolder}`);
+        let verify = await exec(`manifest-tool verify -i "${maniFile}" -V ${vendorId} -C ${deviceClassId} -d ${tmpFolder}`);
+
+        // not sure if this is the right way, but OK
+        if (verify.indexOf('CRITICAL') > -1) {
+            throw 'Manifest verification failed (' + verify + ')';
+        }
 
         // and parse the manifest
         let manifest = JSON.parse(await exec(`manifest-tool parse -ji "${maniFile}"`));

@@ -25,6 +25,7 @@ const manifestParser = require('./manifest-parser');
 const fs = require('fs');
 const fp = require('ieee-float');
 const i64 = require('node-int64');
+const Path = require('path');
 
 const CON_PR = '\x1b[34m[ClientService]\x1b[0m';
 
@@ -142,7 +143,7 @@ MbedDevice.prototype.deregister = async function() {
     this.endpoint = '';
 };
 
-MbedDevice.prototype.registerUpdateResources = async function() {
+MbedDevice.prototype.registerUpdateResources = async function(vendorId, classId, certificateBuffer) {
     const ID_PR = this.ID_PR;
 
     let rpc = this.rpcClient;
@@ -155,6 +156,9 @@ MbedDevice.prototype.registerUpdateResources = async function() {
     await rpc.createFunction('5/0/2', () => {
         console.log(CON_PR, ID_PR, '5/0/2 Execute firmware update call');
     });
+
+    // Device metadata => Manifest protocol supported
+    await rpc.createResourceInt('10255/0/0', 1, RPCClient.GET_ALLOWED, true);
 
     let fwState = this.fwState = await rpc.createResourceInt('5/0/3', ARM_UC_MONITOR_STATE_NONE, RPCClient.GET_ALLOWED, true);
     let fwResult = this.fwResult = await rpc.createResourceInt('5/0/5', ARM_UC_MONITOR_RESULT_NONE, RPCClient.GET_ALLOWED, true);
@@ -174,11 +178,11 @@ MbedDevice.prototype.registerUpdateResources = async function() {
             // parse and verify manifest
             let manifest;
             try {
-                // @todo: these should move to the defintion file...
+                // @todo: these should move to the definition file...
                 manifest = this.manifest = await manifestParser.parseAndVerifyManifest(
-                    'fa6b4a53-d5ad-5fdf-be9d-e663e4d41ffe', // vendor ID
-                    '316d1676-a93b-544c-9b7b-be43a3d5bfa9', // class ID
-                    fs.readFileSync('/Users/janjon01/repos/simple-cloud-client-example/.update-certificates/default.der'), // cert
+                    vendorId,
+                    classId,
+                    certificateBuffer,
                     package
                 );
             }
@@ -240,7 +244,7 @@ MbedDevice.prototype.setFotaComplete = async function () {
     console.log(CON_PR, this.ID_PR, 'State is now', 'ARM_UC_MONITOR_STATE_NONE');
 };
 
-MbedDevice.prototype.register = async function(lwm2m, supportsUpdate) {
+MbedDevice.prototype.register = async function(lwm2m, supportsUpdate, vendorId, classId, updateCertificateBuffer) {
 
     let rpc;
 
@@ -309,7 +313,7 @@ MbedDevice.prototype.register = async function(lwm2m, supportsUpdate) {
         // console.log(CON_PR, ID_PR, 'Setting resources');
         await Promise.all(actions);
         if (supportsUpdate) {
-            await this.registerUpdateResources();
+            await this.registerUpdateResources(vendorId, classId, updateCertificateBuffer);
         }
         console.log(CON_PR, ID_PR, 'Setting resources OK');
 
